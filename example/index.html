@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <title>Blurred Location</title>
+
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <link href="../node_modules/leaflet/dist/leaflet.css" rel="stylesheet">
+    <script src="../node_modules/leaflet/dist/leaflet.js"></script>
+    <script src="../node_modules/leaflet-blurred-location/dist/Leaflet.BlurredLocation.js"></script>
+    <script src="../dist/Leaflet.BlurredLocation.js"></script>
+
+  </head>
+
+  <body>
+
+    <div id="map" class="leaflet-map" style="width: 100%; height: 400px;"></div>
+
+
+    <script>
+      var options = {
+        InterfaceOptions: {
+          latId: 'lat',
+          lngId: 'lng'
+        }
+      } ;
+      var LBL = new  BlurredLocation(options);
+
+      var options1 = {
+        LBL: LBL 
+      } ;
+      var BL = new BlurredLocationHelper(options1) ; 
+
+      BL.setZoomByPrecision('1') ; 
+
+      console.log(BL.truncateToPrecision(1.2345678 , 2)) ;
+
+      let grid_width = BL.gridWidthInPixels(10) ;
+      console.log("grid_width = " +grid_width.x + "  , " + grid_width.y) ; 
+      
+    </script>
+  </body>
+</html>
