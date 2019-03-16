@@ -42,11 +42,30 @@ BlurredLocation = function BlurredLocation(options) {
     }
   }
 
+  function distanceToPrecision(meters){
+    let afterDecimal = meters.toString().split(".")[1] ;
+    let precision = 0 ; 
+    if(typeof afterDecimal === "undefined") {
+      precision = 0 ; 
+    }
+    else{
+      precision = afterDecimal.length ;
+    }
+    return afterDecimal ;
+  }
+
+  function precisionToDistance(latitude){
+    let beforeDecimal = lat.toString().split(".")[0] ;
+    return beforeDecimal ;
+  }
+
   return {
    setZoomByPrecision: setZoomByPrecision ,
    truncateToPrecision: truncateToPrecision,
    gridWidthInPixels: gridWidthInPixels,
-   getMinimumGridWidth: getMinimumGridWidth
+   getMinimumGridWidth: getMinimumGridWidth,
+   distanceToPrecision: distanceToPrecision,
+   precisionToDistance: precisionToDistance
   }
 }
 
