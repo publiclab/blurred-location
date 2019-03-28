@@ -29,14 +29,19 @@ module.exports = function(grunt) {
     },
 
     jasmine: {
-      src: "src/client/js/*.js",
-      options: {
-        specs: "spec/javascripts/*spec.js",
-        vendor: [
-          "node_modules/jquery/dist/jquery.js",
-          "node_modules/jasmine-jquery/lib/jasmine-jquery.js"
-        ]
-      }
+    	pivotal: {
+      		src: "src/client/js/*.js",
+      		options: {
+	        specs: "spec/javascripts/*spec.js",
+	        vendor: [
+	          'node_modules/jquery/dist/jquery.js',
+	          'node_modules/leaflet/dist/leaflet.js',
+	          'node_modules/leaflet-blurred-location/dist/Leaflet.BlurredLocation.js',
+	          'dist/Leaflet.BlurredLocation.js',
+	          'node_modules/jasmine-jquery/lib/jasmine-jquery.js'
+	        ]
+      		}
+      	}
     },
 
     jshint: {

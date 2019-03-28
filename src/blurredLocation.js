@@ -1,6 +1,6 @@
-BlurredLocation = function BlurredLocation(options) {
+BlurredLocationHelper = function BlurredLocationHelper(options) {
 
-  var blurredLocation = this ;
+  var blurredLocationHelper = this ;
  
   options = options || {} ;
   options.LBL = options.LBL ;
@@ -22,8 +22,8 @@ BlurredLocation = function BlurredLocation(options) {
   	let center = options.LBL.map.getCenter() ;
     var p1 = L.latLng(center.lat, center.lng);
     var p2 = L.latLng(p1.lat+degrees, p1.lng+degrees);
-    var l1 = options.map.latLngToContainerPoint(p1);
-    var l2 = options.map.latLngToContainerPoint(p2);
+    var l1 = options.LBL.map.latLngToContainerPoint(p1);
+    var l2 = options.LBL.map.latLngToContainerPoint(p2);
     return {
       x: Math.abs(l2.x - l1.x),
       y: Math.abs(l2.y - l1.y),
@@ -50,4 +50,4 @@ BlurredLocation = function BlurredLocation(options) {
   }
 }
 
-exports.BlurredLocation = BlurredLocation;
+exports.BlurredLocationHelper = BlurredLocationHelper ;
