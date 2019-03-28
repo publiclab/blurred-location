@@ -1,6 +1,6 @@
-BlurredLocation = function BlurredLocation(options) {
+BlurredLocationHelper = function BlurredLocationHelper(options) {
 
-  var blurredLocation = this ;
+  var blurredLocationHelper = this ;
  
   options = options || {} ;
   options.LBL = options.LBL ;
@@ -23,8 +23,8 @@ BlurredLocation = function BlurredLocation(options) {
   	let center = options.LBL.map.getCenter() ;
     var p1 = L.latLng(center.lat, center.lng);
     var p2 = L.latLng(p1.lat+degrees, p1.lng+degrees);
-    var l1 = options.map.latLngToContainerPoint(p1);
-    var l2 = options.map.latLngToContainerPoint(p2);
+    var l1 = options.LBL.map.latLngToContainerPoint(p1);
+    var l2 = options.LBL.map.latLngToContainerPoint(p2);
     return {
       x: Math.abs(l2.x - l1.x),
       y: Math.abs(l2.y - l1.y),
@@ -55,7 +55,7 @@ BlurredLocation = function BlurredLocation(options) {
      else if(zoom >5 && zoom <=9){
       return 1 ;
      } 
-     else if(zoom >2 && zoom <=12){
+     else if(zoom >9 && zoom <=12){
       return 0.1 ;
      }      
      else if(zoom >12 && zoom <=15){
@@ -80,7 +80,7 @@ BlurredLocation = function BlurredLocation(options) {
     if(i>0 && i == options.zoom_filter.length){
       zoom = options.zoom_filter[i-1][2] ;
     }
-
+    console.log("max zoom : " , zoom) ;
     return zoom ; 
   }
 
@@ -97,6 +97,7 @@ BlurredLocation = function BlurredLocation(options) {
 
     let max_zoom = getMaxZoomFromPrecision(precision) ; 
     let interval = getIntervalFromZoomLevel(max_zoom) ;
+    console.log("interval: " , interval) ;
 
     var latlng1 = L.latLng(0,0) ;
     var latlng2 = L.latLng(0,interval) ;
@@ -113,19 +114,13 @@ BlurredLocation = function BlurredLocation(options) {
 
   }
 
-  // the precision you should choose so people would be able to find your location to within X meters
-  function showMarkerUptoDistance(distance){
-   
-  }
-
   return {
    setZoomByPrecision: setZoomByPrecision ,
    truncateToPrecision: truncateToPrecision,
    gridWidthInPixels: gridWidthInPixels,
    getMinimumGridWidth: getMinimumGridWidth,
-   getGridSizeFromLatitude: getGridSizeFromLatitude,
-   showMarkerUptoDistance: showMarkerUptoDistance
+   getGridSizeFromLatitude: getGridSizeFromLatitude
   }
 }
 
-exports.BlurredLocation = BlurredLocation;
+exports.BlurredLocationHelper = BlurredLocationHelper ;
