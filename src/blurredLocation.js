@@ -66,6 +66,7 @@ BlurredLocationHelper = function BlurredLocationHelper(options) {
      } 
   }
 
+  // For a given precision value , returns the maximum zoom level where the marker will be visible .
   function getMaxZoomFromPrecision(precision){
 
     let zoom = options.zoom_filter[0][2] ;
