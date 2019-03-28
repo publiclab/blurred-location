@@ -15,7 +15,8 @@ BlurredLocation = function BlurredLocation(options) {
  
   options = options || {} ;
   options.LBL = options.LBL ;
-  
+  options.zoom_filter = options.zoom_filter || [[0,5,0] , [5,6,2] , [8,10,4] , [11,18,5]] ;
+
   function setZoomByPrecision(precision) {
     var precisionTable = {'-2': 2, '-1': 3, '0':6, '1':10, '2':13, '3':16} ;
     options.LBL.setZoom(precisionTable[precision]) ;
@@ -53,8 +54,50 @@ BlurredLocation = function BlurredLocation(options) {
     }
   }
 
-  function distanceToPrecision(meters){
-    let afterDecimal = meters.toString().split(".")[1] ;
+  // Interval = difference between consecutive coordinates .
+  function getIntervalFromZoomLevel(zoom){
+                  
+     if(zoom >=2 && zoom <=2){
+      return 100 ;
+     }            
+     else if(zoom >2 && zoom <=5){
+      return 10 ;
+     } 
+     else if(zoom >5 && zoom <=9){
+      return 1 ;
+     } 
+     else if(zoom >2 && zoom <=12){
+      return 0.1 ;
+     }      
+     else if(zoom >12 && zoom <=15){
+      return 0.01 ;
+     } 
+     else if(zoom >15){
+      return 0.001 ;
+     } 
+  }
+
+  function getMaxZoomFromPrecision(precision){
+
+    let zoom = options.zoom_filter[0][2] ;
+    let i=0 ;
+    for(i=0 ; i<options.zoom_filter.length ; i++){
+      if(i-1>0 && options.zoom_filter[i][2] > precision){
+        zoom = options.zoom_filter[i-1][2] ;
+        break ;
+      }
+    }
+
+    if(i>0 && i == options.zoom_filter.length){
+      zoom = options.zoom_filter[i-1][2] ;
+    }
+
+    return zoom ; 
+  }
+
+  // calculates the grid size from the precision of the latitude .
+  function getGridSizeFromLatitude(latitude){
+    let afterDecimal = latitude.toString().split(".")[1] ;
     let precision = 0 ; 
     if(typeof afterDecimal === "undefined") {
       precision = 0 ; 
@@ -62,12 +105,28 @@ BlurredLocation = function BlurredLocation(options) {
     else{
       precision = afterDecimal.length ;
     }
-    return afterDecimal ;
+
+    let max_zoom = getMaxZoomFromPrecision(precision) ; 
+    let interval = getIntervalFromZoomLevel(max_zoom) ;
+
+    var latlng1 = L.latLng(0,0) ;
+    var latlng2 = L.latLng(0,interval) ;
+    let x_dist = options.LBL.map.distance(latlng1,latlng2) ;
+
+    var latlng3 = L.latLng(0,0) ;
+    var latlng4 = L.latLng(interval,0) ;
+    let y_dist = options.LBL.map.distance(latlng3,latlng4) ;
+
+    return {
+      x: x_dist,
+      y: y_dist
+    }
+
   }
 
-  function precisionToDistance(latitude){
-    let beforeDecimal = lat.toString().split(".")[0] ;
-    return beforeDecimal ;
+  // the precision you should choose so people would be able to find your location to within X meters
+  function showMarkerUptoDistance(distance){
+   
   }
 
   return {
@@ -75,8 +134,8 @@ BlurredLocation = function BlurredLocation(options) {
    truncateToPrecision: truncateToPrecision,
    gridWidthInPixels: gridWidthInPixels,
    getMinimumGridWidth: getMinimumGridWidth,
-   distanceToPrecision: distanceToPrecision,
-   precisionToDistance: precisionToDistance
+   getGridSizeFromLatitude: getGridSizeFromLatitude,
+   showMarkerUptoDistance: showMarkerUptoDistance
   }
 }
 
