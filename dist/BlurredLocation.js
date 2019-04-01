@@ -14,12 +14,12 @@ BlurredLocationHelper = function BlurredLocationHelper(options) {
   var blurredLocationHelper = this ;
  
   options = options || {} ;
-  options.LBL = options.LBL ;
+  options.precisionTable = options.precisionTable ||  {'-2': 2, '-1': 3, '0':6, '1':10, '2':13, '3':16} ;
   options.zoom_filter = options.zoom_filter || [[0,5,0] , [5,6,2] , [8,10,4] , [11,18,5]] ;
 
-  function setZoomByPrecision(precision) {
-    var precisionTable = {'-2': 2, '-1': 3, '0':6, '1':10, '2':13, '3':16} ;
-    options.LBL.setZoom(precisionTable[precision]) ;
+  function returnZoomByPrecision(precision) {
+    // options.LBL.setZoom(precisionTable[precision]) ;
+    return options.precisionTable[precision] ;
   }
 
   function truncateToPrecision(number, digits) {
@@ -30,17 +30,18 @@ BlurredLocationHelper = function BlurredLocationHelper(options) {
     return truncatedNum / multiplier;
   };
 
-  function gridWidthInPixels(degrees) {
-  	let center = options.LBL.map.getCenter() ;
-    var p1 = L.latLng(center.lat, center.lng);
-    var p2 = L.latLng(p1.lat+degrees, p1.lng+degrees);
-    var l1 = options.LBL.map.latLngToContainerPoint(p1);
-    var l2 = options.LBL.map.latLngToContainerPoint(p2);
-    return {
-      x: Math.abs(l2.x - l1.x),
-      y: Math.abs(l2.y - l1.y),
-    }
-  }
+  // the pixel value depends on the size of the map container !
+  // function gridWidthInPixels(degrees) {
+  // 	let center = options.LBL.map.getCenter() ;
+  //   var p1 = L.latLng(center.lat, center.lng);
+  //   var p2 = L.latLng(p1.lat+degrees, p1.lng+degrees);
+  //   var l1 = options.LBL.map.latLngToContainerPoint(p1);
+  //   var l2 = options.LBL.map.latLngToContainerPoint(p2);
+  //   return {
+  //     x: Math.abs(l2.x - l1.x),
+  //     y: Math.abs(l2.y - l1.y),
+  //   }
+  // }
 
   function getMinimumGridWidth(pixels) {
     var degrees = 100.0, precision = -2;
@@ -77,6 +78,7 @@ BlurredLocationHelper = function BlurredLocationHelper(options) {
      } 
   }
 
+  // For a given precision value , returns the maximum zoom level where the marker will be visible .
   function getMaxZoomFromPrecision(precision){
 
     let zoom = options.zoom_filter[0][2] ;
@@ -95,8 +97,10 @@ BlurredLocationHelper = function BlurredLocationHelper(options) {
     return zoom ; 
   }
 
-  // calculates the grid size from the precision of the latitude .
-  function getGridSizeFromLatitude(latitude){
+  // calculates the grid size from the precision of the latitude (the maximum zoom where that marker would be visible , returns grid size at that time) .
+  // this function depends on the dimension of the map container . 
+  // to calculate distance in pixels between 2 coordinates , one should use the function as decribed in the documentation of map used .
+  function getGridCoordinatesFromLatitude(latitude){
     let afterDecimal = latitude.toString().split(".")[1] ;
     let precision = 0 ; 
     if(typeof afterDecimal === "undefined") {
@@ -110,27 +114,32 @@ BlurredLocationHelper = function BlurredLocationHelper(options) {
     let interval = getIntervalFromZoomLevel(max_zoom) ;
     console.log("interval: " , interval) ;
 
-    var latlng1 = L.latLng(0,0) ;
-    var latlng2 = L.latLng(0,interval) ;
-    let x_dist = options.LBL.map.distance(latlng1,latlng2) ;
+    // var latlng1 = L.latLng(0,0) ;
+    // var latlng2 = L.latLng(0,interval) ;
+    // let x_dist = options.LBL.map.distance(latlng1,latlng2) ;
 
-    var latlng3 = L.latLng(0,0) ;
-    var latlng4 = L.latLng(interval,0) ;
-    let y_dist = options.LBL.map.distance(latlng3,latlng4) ;
+    // var latlng3 = L.latLng(0,0) ;
+    // var latlng4 = L.latLng(interval,0) ;
+    // let y_dist = options.LBL.map.distance(latlng3,latlng4) ;
+
+    // return {
+    //   x: x_dist,
+    //   y: y_dist
+    // }
 
     return {
-      x: x_dist,
-      y: y_dist
+      height: { x: [0,0] , y: [0,interval]},
+      width: { x: [0,0] , y: [interval,0]}
     }
 
   }
 
   return {
-   setZoomByPrecision: setZoomByPrecision ,
+   returnZoomByPrecision: returnZoomByPrecision ,
    truncateToPrecision: truncateToPrecision,
-   gridWidthInPixels: gridWidthInPixels,
+   //gridWidthInPixels: gridWidthInPixels,
    getMinimumGridWidth: getMinimumGridWidth,
-   getGridSizeFromLatitude: getGridSizeFromLatitude
+   getGridCoordinatesFromLatitude: getGridCoordinatesFromLatitude
   }
 }
 

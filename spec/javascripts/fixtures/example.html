@@ -11,155 +11,128 @@
     <script type="text/javascript">
       BlurredLocationHelper = function BlurredLocationHelper(options) {
 
-  var blurredLocationHelper = this ;
- 
-  options = options || {} ;
-  options.LBL = options.LBL ;
-  options.zoom_filter = options.zoom_filter || [[0,5,0] , [5,6,2] , [8,10,4] , [11,18,5]] ;
+      var blurredLocationHelper = this ;
+     
+      options = options || {} ;
+      options.precisionTable = options.precisionTable ||  {'-2': 2, '-1': 3, '0':6, '1':10, '2':13, '3':16} ;
+      options.zoom_filter = options.zoom_filter || [[0,5,0] , [5,6,2] , [8,10,4] , [11,18,5]] ;
 
-  function setZoomByPrecision(precision) {
-    var precisionTable = {'-2': 2, '-1': 3, '0':6, '1':10, '2':13, '3':16} ;
-    options.LBL.setZoom(precisionTable[precision]) ;
-  }
+      function returnZoomByPrecision(precision) {
+        // options.LBL.setZoom(precisionTable[precision]) ;
+        return options.precisionTable[precision] ;
+      }
 
-  function truncateToPrecision(number, digits) {
-    var multiplier = Math.pow(10, digits),
-        adjustedNum = number * multiplier,
-        truncatedNum = Math[adjustedNum < 0 ? 'ceil' : 'floor'](adjustedNum);
+      function truncateToPrecision(number, digits) {
+        var multiplier = Math.pow(10, digits),
+            adjustedNum = number * multiplier,
+            truncatedNum = Math[adjustedNum < 0 ? 'ceil' : 'floor'](adjustedNum);
 
-    return truncatedNum / multiplier;
-  };
+        return truncatedNum / multiplier;
+      };
 
-  function gridWidthInPixels(degrees) {
-    var center = options.LBL.map.getCenter() ;
-    var p1 = L.latLng(center.lat, center.lng);
-    var p2 = L.latLng(p1.lat+degrees, p1.lng+degrees);
-    var l1 = options.LBL.map.latLngToContainerPoint(p1);
-    var l2 = options.LBL.map.latLngToContainerPoint(p2);
-    return {
-      x: Math.abs(l2.x - l1.x),
-      y: Math.abs(l2.y - l1.y),
-    }
-  }
+      function getMinimumGridWidth(pixels) {
+        var degrees = 100.0, precision = -2;
+        while(gridWidthInPixels(degrees).x > pixels) {
+          degrees/= 10;
+          precision+= 1;
+        }
+        return {
+          precision: precision,
+          degrees: degrees,
+        }
+      }
 
-  function getMinimumGridWidth(pixels) {
-    var degrees = 100.0, precision = -2;
-    while(gridWidthInPixels(degrees).x > pixels) {
-      degrees/= 10;
-      precision+= 1;
-    }
-    return {
-      precision: precision,
-      degrees: degrees,
-    }
-  }
+      // Interval = difference between consecutive coordinates .
+      function getIntervalFromZoomLevel(zoom){
+                      
+         if(zoom >=2 && zoom <=2){
+          return 100 ;
+         }            
+         else if(zoom >2 && zoom <=5){
+          return 10 ;
+         } 
+         else if(zoom >5 && zoom <=9){
+          return 1 ;
+         } 
+         else if(zoom >9 && zoom <=12){
+          return 0.1 ;
+         }      
+         else if(zoom >12 && zoom <=15){
+          return 0.01 ;
+         } 
+         else if(zoom >15){
+          return 0.001 ;
+         } 
+      }
 
-  // Interval = difference between consecutive coordinates .
-  function getIntervalFromZoomLevel(zoom){
-                  
-     if(zoom >=2 && zoom <=2){
-      return 100 ;
-     }            
-     else if(zoom >2 && zoom <=5){
-      return 10 ;
-     } 
-     else if(zoom >5 && zoom <=9){
-      return 1 ;
-     } 
-     else if(zoom >9 && zoom <=12){
-      return 0.1 ;
-     }      
-     else if(zoom >12 && zoom <=15){
-      return 0.01 ;
-     } 
-     else if(zoom >15){
-      return 0.001 ;
-     } 
-  }
+      // For a given precision value , returns the maximum zoom level where the marker will be visible .
+      function getMaxZoomFromPrecision(precision){
 
-  // For a given precision value , returns the maximum zoom level where the marker will be visible .
-  function getMaxZoomFromPrecision(precision){
+        var zoom = options.zoom_filter[0][2] ;
+        var i=0 ;
+        for(i=0 ; i<options.zoom_filter.length ; i++){
+          if(i-1>0 && options.zoom_filter[i][2] > precision){
+            zoom = options.zoom_filter[i-1][2] ;
+            break ;
+          }
+        }
 
-    var zoom = options.zoom_filter[0][2] ;
-    var i=0 ;
-    for(i=0 ; i<options.zoom_filter.length ; i++){
-      if(i-1>0 && options.zoom_filter[i][2] > precision){
-        zoom = options.zoom_filter[i-1][2] ;
-        break ;
+        if(i>0 && i == options.zoom_filter.length){
+          zoom = options.zoom_filter[i-1][2] ;
+        }
+        console.log("max zoom : " , zoom) ;
+        return zoom ; 
+      }
+
+      // calculates the grid size from the precision of the latitude (the maximum zoom where that marker would be visible , returns grid size at that time) .
+      // this function depends on the dimension of the map container . 
+      // to calculate distance in pixels between 2 coordinates , one should use the function as decribed in the documentation of map used .
+      function getGridCoordinatesFromLatitude(latitude){
+        var afterDecimal = latitude.toString().split(".")[1] ;
+        var precision = 0 ; 
+        if(typeof afterDecimal === "undefined") {
+          precision = 0 ; 
+        }
+        else{
+          precision = afterDecimal.length ;
+        }
+
+        var max_zoom = getMaxZoomFromPrecision(precision) ; 
+        var interval = getIntervalFromZoomLevel(max_zoom) ;
+        console.log("interval: " , interval) ;
+        return {
+          height: { x: [0,0] , y: [0,interval]},
+          width: { x: [0,0] , y: [interval,0]}
+        }
+
+      }
+
+      return {
+       returnZoomByPrecision: returnZoomByPrecision ,
+       truncateToPrecision: truncateToPrecision,
+       getMinimumGridWidth: getMinimumGridWidth,
+       getGridCoordinatesFromLatitude: getGridCoordinatesFromLatitude
       }
     }
-
-    if(i>0 && i == options.zoom_filter.length){
-      zoom = options.zoom_filter[i-1][2] ;
-    }
-    console.log("max zoom : " , zoom) ;
-    return zoom ; 
-  }
-
-  // calculates the grid size from the precision of the latitude .
-  function getGridSizeFromLatitude(latitude){
-    var afterDecimal = latitude.toString().split(".")[1] ;
-    var precision = 0 ; 
-    if(typeof afterDecimal === "undefined") {
-      precision = 0 ; 
-    }
-    else{
-      precision = afterDecimal.length ;
-    }
-
-    var max_zoom = getMaxZoomFromPrecision(precision) ; 
-    var interval = getIntervalFromZoomLevel(max_zoom) ;
-    console.log("interval: " , interval) ;
-
-    var latlng1 = L.latLng(0,0) ;
-    var latlng2 = L.latLng(0,interval) ;
-    var x_dist = options.LBL.map.distance(latlng1,latlng2) ;
-
-    var latlng3 = L.latLng(0,0) ;
-    var latlng4 = L.latLng(interval,0) ;
-    var y_dist = options.LBL.map.distance(latlng3,latlng4) ;
-
-    return {
-      x: x_dist,
-      y: y_dist
-    }
-
-  }
-
-  return {
-   setZoomByPrecision: setZoomByPrecision ,
-   truncateToPrecision: truncateToPrecision,
-   gridWidthInPixels: gridWidthInPixels,
-   getMinimumGridWidth: getMinimumGridWidth,
-   getGridSizeFromLatitude: getGridSizeFromLatitude
-  }
-}
 
     </script>
 
     <div id="map" class="leaflet-map" style="width: 100%; height: 400px;"></div>
 
-
     <script>
-      var options = {
-        InterfaceOptions: {
-          latId: 'lat',
-          lngId: 'lng'
-        }
-      } ;
-      var LBL = new  BlurredLocation(options);
+    
 
       var options1 = {
-        LBL: LBL 
+
       } ;
       var BL = new BlurredLocationHelper(options1) ; 
 
-      BL.setZoomByPrecision('1') ; 
+      console.log(BL.returnZoomByPrecision('1')) ; 
 
       console.log(BL.truncateToPrecision(1.2345678 , 2)) ;
 
-      var grid_width = BL.gridWidthInPixels(10) ;
-      console.log("grid_width = " +grid_width.x + "  , " + grid_width.y) ; 
+      // var grid_width = BL.gridWidthInPixels(10) ;
+      // console.log("grid_width = " +grid_width.x + "  , " + grid_width.y) ; 
       
     </script>
   </body>

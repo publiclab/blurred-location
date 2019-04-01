@@ -7,7 +7,6 @@
     <script src="../node_modules/jquery/dist/jquery.min.js"></script>
     <link href="../node_modules/leaflet/dist/leaflet.css" rel="stylesheet">
     <script src="../node_modules/leaflet/dist/leaflet.js"></script>
-    <script src="../node_modules/leaflet-blurred-location/dist/Leaflet.BlurredLocation.js"></script>
     <script src="../dist/BlurredLocation.js"></script>
 
   </head>
@@ -18,25 +17,23 @@
 
 
     <script>
-      var options = {
-        InterfaceOptions: {
-          latId: 'lat',
-          lngId: 'lng'
-        }
-      } ;
-      var LBL = new  BlurredLocation(options);
+      // var options = {
+      //   InterfaceOptions: {
+      //     latId: 'lat',
+      //     lngId: 'lng'
+      //   }
+      // } ;
+      // var LBL = new  BlurredLocation(options);
 
-      var options1 = {
-        LBL: LBL 
-      } ;
+      var options1 = {} ;
       var BL = new BlurredLocationHelper(options1) ; 
 
-      BL.setZoomByPrecision('1') ; 
+      console.log(BL.returnZoomByPrecision('1')) ; 
 
       console.log(BL.truncateToPrecision(1.2345678 , 2)) ;
 
-      let grid_width = BL.gridWidthInPixels(10) ;
-      console.log("grid_width = " +grid_width.x + "  , " + grid_width.y) ; 
+      // let grid_width = BL.gridWidthInPixels(10) ;
+      // console.log("grid_width = " +grid_width.x + "  , " + grid_width.y) ; 
       
     </script>
   </body>
