@@ -5,6 +5,9 @@ This library provides the "blurred location" model for `leaflet-blurred-location
 
 https://github.com/publiclab/leaflet-blurred-location
 
+The goal of this library is to provide the fundamental methods to implement a blurred location model, as described here: https://github.com/publiclab/leaflet-blurred-location/issues/205
+
+
 ## Definition of "blurred location"
 
 See https://github.com/publiclab/leaflet-blurred-location#how-it-works for an in-depth description of how blurred location works. 
